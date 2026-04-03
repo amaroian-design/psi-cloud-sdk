@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="psi-cloud", 
-    version="1.0.0",
+    version="1.1.0",
     author="Ian Amaro", 
     author_email="amaroian2010@gmail.com",
     description="SDK Oficial para el Motor PSI (Proposición de Suficiencia Informativa).",
