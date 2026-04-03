@@ -26,9 +26,51 @@ PSI analiza tu sistema y responde una sola pregunta crítica:
 pip install psi-cloud
 ```
 
+*(Asegúrate de usar la versión >= 1.1.0 para acceder a las funciones de Gating)*
+
 ---
 
-## ⚡ Uso Rápido
+## 🛑 NUEVO: "The Entropy-Gate" (Decorador de Ahorro de GPU)
+
+¿Cansado de quemar créditos de AWS o Render en datos basura? El SDK ahora incluye el decorador `@psi_gated`. 
+
+Protege tus funciones de inferencia pesadas con 1 línea de código. La función **solo se ejecutará** si el motor PSI confirma que hay suficiente información. Si no, se inhibe automáticamente.
+
+```python
+from psi_cloud import PSIClient
+
+client = PSIClient(api_key="TU_API_KEY_AQUÍ")
+
+# 1. Define cómo calcular los bits de entrada de tu sistema
+def calcular_señal(datos_usuario):
+    # Ejemplo: 0.5 bits por cada dato válido aportado
+    return len([k for k, v in datos_usuario.items() if v is not None]) * 0.5
+
+# 2. Protege tu inferencia costosa con The Entropy-Gate
+@client.psi_gated(n=8, bits_extractor=calcular_señal, fallback_response={"status": "Inhibido por falta de información"})
+def ejecutar_modelo_ia(datos_usuario):
+    print("Consumiendo créditos de GPU...")
+    # Tu lógica pesada de Machine Learning aquí
+    return {"prediccion": "Exitosa"}
+
+# --- PRUEBA DEL SISTEMA ---
+
+# ❌ Intento pobre (1.0 bits): La IA NUNCA se ejecuta, ahorras dinero.
+transaccion_mala = {"ip": "192...", "device": None, "location": None, "history": None}
+print(ejecutar_modelo_ia(transaccion_mala)) 
+# Salida: {'status': 'Inhibido por falta de información'}
+
+# ✅ Intento rico (2.0 bits): Pasa la validación, la IA se ejecuta.
+transaccion_buena = {"ip": "192...", "device": "Mac", "location": "NY", "history": "Valido"}
+print(ejecutar_modelo_ia(transaccion_buena))
+# Salida: Consumiendo créditos de GPU... {'prediccion': 'Exitosa'}
+```
+
+---
+
+## ⚡ Uso Clásico (Validación Manual)
+
+Si prefieres usar el motor paso a paso sin el decorador:
 
 ```python
 from psi_cloud import PSIClient
@@ -74,16 +116,9 @@ Resultado:
 
 ### ✅ Con PSI
 
-Antes de entrenar, ejecutan:
+Antes de entrenar, ejecutan el chequeo y reciben la respuesta del motor:
 
-```python
-resultado = client.check_sufficiency(n=8, bits=2.5)
-print(resultado)
-```
-
-Respuesta del motor:
-
-```
+```json
 {
   "deterministic_achieved": False,
   "margin": -0.5,
@@ -91,53 +126,9 @@ Respuesta del motor:
 }
 ```
 
----
-
 ### 💡 Insight crítico
 
-PSI detecta instantáneamente que:
-
-👉 El sistema **no tiene suficiente información para resolverse**
-
-Sin importar:
-
-* el modelo
-* el algoritmo
-* el tuning
-
----
-
-### 🚀 Resultado
-
-En lugar de perder horas:
-
-* Añaden nuevas features
-* Aumentan la señal informativa
-
-Luego ejecutan nuevamente:
-
-```python
-resultado = client.check_sufficiency(n=8, bits=3.2)
-```
-
-Ahora:
-
-```
-{
-  "deterministic_achieved": True,
-  "margin": 0.2,
-  "recommendation": "El sistema cumple el criterio de suficiencia"
-}
-```
-
----
-
-### 🧠 Lo que PSI realmente hizo
-
-No “optimizó” el modelo.
-No “mejoró” el algoritmo.
-
-👉 **Evitó que resolvieran un problema imposible.**
+PSI detecta instantáneamente que el sistema **no tiene suficiente información para resolverse**. Sin importar el modelo, el algoritmo o el tuning. **Evitó que resolvieran un problema imposible.**
 
 ---
 
@@ -163,24 +154,17 @@ Si el sistema no cumple el criterio interno, PSI calcula exactamente cuánta inf
 
 ## ⚙️ Casos de uso
 
-* Validación de modelos antes de entrenamiento
-* Sistemas de decisión y optimización
-* Arquitecturas distribuidas
-* Machine Learning / AI pipelines
-* Sistemas heurísticos complejos
+* **MLOps / FinOps:** Reducción de costos de inferencia en la nube (Gating).
+* Validación de modelos antes de entrenamiento.
+* Sistemas de decisión y optimización.
+* Arquitecturas distribuidas.
+* Sistemas heurísticos complejos.
 
 ---
 
 ## 🔐 ¿Por qué usar el SDK?
 
-Porque el criterio completo de PSI:
-
-* No es trivial
-* No es lineal
-* No depende solo de una fórmula
-* Está optimizado y validado en producción
-
-👉 El SDK te da acceso directo al motor sin tener que implementarlo desde cero.
+Porque el criterio completo de PSI no es trivial, no es lineal y no depende solo de una fórmula. Está optimizado y validado en producción. 👉 El SDK te da acceso directo al motor sin tener que implementarlo desde cero.
 
 ---
 
